@@ -3103,6 +3103,34 @@ void homekit_server_close_client(homekit_server_t *server, client_context_t *con
     client_context_free(context);
 }
 
+void homekit_server_close_old_duplicate_clients(homekit_server_t *server, struct sockaddr_in addr) {
+    
+    struct sockaddr_in old_addr;
+    socklen_t addr_len = sizeof(addr);
+    
+    client_context_t *context = server->clients;
+    while (context) {
+        client_context_t *next = context->next;
+        
+        if (getpeername(context->socket , (struct sockaddr *)&old_addr , &addr_len) == 0) {
+            if ((old_addr.sin_addr.s_addr == addr.sin_addr.s_addr) && (old_addr.sin_port != addr.sin_port)){
+                char address_buffer[INET_ADDRSTRLEN];
+                inet_ntop(AF_INET, &old_addr.sin_addr, address_buffer, sizeof(address_buffer));
+                INFO("Found older connection with same address as new connection, closing old connection on IP %s, Port %d, New Port is %d\n", address_buffer, old_addr.sin_port, addr.sin_port );
+                context->disconnect = true;
+            }
+        }
+        else {
+            INFO("Error in geetpeername homekit_server_close_old_duplicate_connection\n");
+        }
+        if (context->disconnect)
+            homekit_server_close_client(server, context);
+        
+        context = next;
+    }
+}
+
+
 
 client_context_t *homekit_server_accept_client(homekit_server_t *server) {
     int s = accept(server->listen_fd, (struct sockaddr *)NULL, (socklen_t *)NULL);
@@ -3125,7 +3153,8 @@ client_context_t *homekit_server_accept_client(homekit_server_t *server) {
         strcpy(address_buffer, "?.?.?.?");
     }
 
-    INFO("Got new client connection: %d from %s", s, address_buffer);
+    INFO("Got new client connection: %d from %s, port %d", s, address_buffer, addr.sin_port);
+    homekit_server_close_old_duplicate_clients(server, addr); /* check and remove any old conencitons with same ip and port*/
 
     const struct timeval rcvtimeout = { 10, 0 }; /* 10 second timeout */
     setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &rcvtimeout, sizeof(rcvtimeout));
