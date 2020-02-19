@@ -2755,7 +2755,7 @@ void homekit_server_on_pairings(client_context_t *context, const byte *data, siz
                 client_context_t *c = context->server->clients;
                 while (c) {
                     if (c->pairing_id == pairing.id)
-                        c->disconnect = true;
+                        c->disconnect = false;
                     c = c->next;
                 }
 
@@ -3005,13 +3005,14 @@ static void homekit_client_process(client_context_t *context) {
         context->data+context->data_available,
         context->data_size-context->data_available
     );
+    int errsv = errno;
     if (data_len == 0) {
-        context->disconnect = true;
+        context->disconnect = false;
         return;
     }
 
     if (data_len < 0) {
-        if (errno != EAGAIN) {
+        if (errsv != EAGAIN) {
             CLIENT_ERROR(context, "Error reading data from socket (code %d). Disconnecting", errno);
             context->disconnect = true;
         }
@@ -3265,7 +3266,7 @@ void homekit_server_close_clients(homekit_server_t *server) {
     client_context_t *context = server->clients;
     while (context) {
         client_context_t *next = context->next;
-
+        DEBUG("Close client: %d | socket: %d", context->disconnect, context->socket);
         if (context->disconnect)
             homekit_server_close_client(server, context);
 
@@ -3299,12 +3300,15 @@ static void homekit_run_server(homekit_server_t *server)
         int triggered_nfds = select(server->max_fd + 1, &read_fds, NULL, NULL, &timeout);
         if (triggered_nfds > 0) {
             if (FD_ISSET(server->listen_fd, &read_fds)) {
+                DEBUG("Server accept client");
                 homekit_server_accept_client(server);
                 triggered_nfds--;
             }
 
             client_context_t *context = server->clients;
             while (context && triggered_nfds) {
+                DEBUG("Process socket: %d | triggered_nfds: %d | pairing_id: %d", 
+                context->socket, triggered_nfds, context->pairing_id);
                 if (FD_ISSET(context->socket, &read_fds)) {
                     homekit_client_process(context);
                     triggered_nfds--;
@@ -3313,6 +3317,7 @@ static void homekit_run_server(homekit_server_t *server)
                 context = context->next;
             }
 
+            DEBUG("Close clients");
             homekit_server_close_clients(server);
         }
 

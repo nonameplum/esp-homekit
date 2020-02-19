@@ -3,12 +3,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef unsigned char byte;
 
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
 #ifdef HOMEKIT_DEBUG
 
-#define DEBUG(message, ...) printf(">>> %s: " message "\n", __func__, ##__VA_ARGS__)
+#define DEBUG(message, ...) printf(">>> [%s:%d] %s: " message "\n", __FILENAME__, __LINE__, __func__, ##__VA_ARGS__)
 
 #else
 
@@ -23,8 +26,8 @@ typedef unsigned char byte;
 
 #else
 
-#define INFO(message, ...) printf(">>> HomeKit: " message "\n", ##__VA_ARGS__)
-#define ERROR(message, ...) printf("!!! HomeKit: " message "\n", ##__VA_ARGS__)
+#define INFO(message, ...) printf(">>> [%s:%d] HomeKit: " message "\n", __FILENAME__, __LINE__, ##__VA_ARGS__)
+#define ERROR(message, ...) printf("!!! HomeKit: " message "\n", __FILENAME__, __LINE__, ##__VA_ARGS__)
 
 #endif
 
