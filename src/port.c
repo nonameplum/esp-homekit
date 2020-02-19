@@ -10,9 +10,19 @@
 #include "debug.h"
 #include "mdns.h"
 
-#ifndef MDNS_TTL
-#define MDNS_TTL 4500
-#endif
+// Check definitions needed for the lwip's mDNS responder
+#if LWIP_MDNS_RESPONDER != 1
+#error("LWIP_MDNS_RESPONDER must be defined equal to 1")
+#endif /* LWIP_MDNS_RESPONDER */
+#if LWIP_NUM_NETIF_CLIENT_DATA != 1
+#error("LWIP_NUM_NETIF_CLIENT_DATA must be defined equal to 1")
+#endif /* LWIP_NUM_NETIF_CLIENT_DATA */
+#if LWIP_NETIF_EXT_STATUS_CALLBACK != 1
+#error("LWIP_NETIF_EXT_STATUS_CALLBACK must be defined equal to 1")
+#endif /* LWIP_NETIF_EXT_STATUS_CALLBACK */
+#if LWIP_MDNS_SEARCH != 1
+#error("LWIP_MDNS_SEARCH must be defined equal to 1")
+#endif /* LWIP_MDNS_SEARCH */
 
 uint32_t homekit_random() {
     return hwrand();

@@ -1,6 +1,9 @@
 # Component makefile for homekit
 
 ifdef component_compile_rules
+    # For the lwip's mDNS responder
+    EXTRA_CFLAGS += -DLWIP_MDNS_RESPONDER=1 -DLWIP_NUM_NETIF_CLIENT_DATA=1 -DLWIP_NETIF_EXT_STATUS_CALLBACK=1 -DLWIP_MDNS_SEARCH=1
+
     # ESP_OPEN_RTOS
     ifndef wolfssl_ROOT
     $(error Please include wolfssl component prior to homekit)
