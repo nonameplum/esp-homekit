@@ -27,7 +27,7 @@ typedef unsigned char byte;
 #else
 
 #define INFO(message, ...) printf(">>> [%s:%d] HomeKit: " message "\n", __FILENAME__, __LINE__, ##__VA_ARGS__)
-#define ERROR(message, ...) printf("!!! HomeKit: " message "\n", __FILENAME__, __LINE__, ##__VA_ARGS__)
+#define ERROR(message, ...) printf("!!! [%s:%d] HomeKit: " message "\n", __FILENAME__, __LINE__, ##__VA_ARGS__)
 
 #endif
 

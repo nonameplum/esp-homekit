@@ -55,19 +55,19 @@ static int mdns_port = 80;
 static void srv_txt(struct mdns_service *service, void *txt_userdata) {
     LWIP_UNUSED_ARG(txt_userdata);
 
-    DEBUG("mdns_txt count: %d", mdns_txt_count);
+    DEBUG("mDNS txt records count: %d", mdns_txt_count);
     for (int i=0; i<mdns_txt_count; i++) {
         err_t res;
-        DEBUG("mdns add txt: %s, len: %d", mdns_txt_records[i], strlen(mdns_txt_records[i]));
+        DEBUG("mDNS add response txt: %s, len: %d", mdns_txt_records[i], strlen(mdns_txt_records[i]));
         res = mdns_resp_add_service_txtitem(service, mdns_txt_records[i], strlen(mdns_txt_records[i]));
         if (res != ERR_OK) {
-            DEBUG("mdns add service txt failed '%s'", mdns_txt_records[i]);
+            DEBUG("mDNS add response txt failed '%s'", mdns_txt_records[i]);
         }
     }
 }
 
 static void mdns_report(struct netif* netif, u8_t result, s8_t service) {
-    DEBUG("mdns status[netif %d][service %d]: %d\n", netif->num, service, result);
+    DEBUG("mDNS status[netif %d][service %d]: %d\n", netif->num, service, result);
 }
 
 static void free_mdns_txt_records() {
@@ -111,7 +111,7 @@ void homekit_mdns_add_txt(const char *key, const char *format, ...) {
             mdns_txt_records[count] = (char *)malloc(sizeof(char) * (buffer_len));
             strcpy(mdns_txt_records[count], buffer);
             mdns_txt_count += 1;
-            DEBUG("homekit_mdns_add_txt | count: %d | txt: %s | buffer: %s | buffer_len: %d", 
+            DEBUG("mDNS add txt record | count: %d | txt: %s | buffer: %s | buffer_len: %d", 
             count, mdns_txt_records[count], buffer, buffer_len);
         }
     }
